@@ -1,0 +1,8 @@
+svg.md-editor-icon {
+    width: 25px;
+    height: 25px;
+}
+
+.md-editor-dark, .md-editor-modal-container[data-theme=dark] {
+    --md-bk-color: #0a0a0a;
+}
