@@ -5,7 +5,11 @@ interface RouteParams {
   params: { path: string };
 }
 
-export function GET(request: Request, { params }: RouteParams) {
-  const folderPath = params.path;
-  return NextResponse.json(getFolderStructure(folderPath));
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ path: string }> }
+) {
+    const resolvedParams = await params;
+    const folderPath = resolvedParams.path;
+    return NextResponse.json(getFolderStructure(folderPath));
 }
