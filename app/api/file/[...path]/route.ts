@@ -3,7 +3,7 @@ import { getFileContent, saveFileContent } from '@/lib/filesystem';
 
 export async function GET(
   request: Request,
-  { params }: { params: { path: string[] } }
+  { params }: { params: { path: string[] } } & { searchParams: URLSearchParams }
 ) {
   try {
     // Asegurarse de que params.path existe antes de usarlo
@@ -28,7 +28,7 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { path: string[] } }
+  { params }: { params: { path: string[] } } & { searchParams: URLSearchParams }
 ) {
   try {
     const filePath = params.path.join('/');
