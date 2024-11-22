@@ -1,9 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getFileContent, saveFileContent } from '@/lib/filesystem';
 
 export async function GET(
-  request: Request,
-  { params }: { params: { path: string[] } } & { searchParams: URLSearchParams }
+  request: NextRequest,
+  { params }: { params: { path: string[] } }
 ) {
   try {
     // Asegurarse de que params.path existe antes de usarlo
@@ -27,8 +27,8 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
-  { params }: { params: { path: string[] } } & { searchParams: URLSearchParams }
+  request: NextRequest,
+  { params }: { params: { path: string[] } }
 ) {
   try {
     const filePath = params.path.join('/');
