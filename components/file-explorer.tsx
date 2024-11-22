@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Folder, File, ChevronRight, ChevronDown, Plus, Trash2 } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { Button } from './ui/button';
@@ -33,39 +33,40 @@ export function FileExplorer({ setText, setCurrentFile }: FileExplorerProps) {
       const response = await fetch(`/api/folders/${encodeURIComponent(folderPath)}`);
       const data = await response.json();
       
+      const filesArray = Array.isArray(data) ? data : [];
+      
       if (folderPath === '') {
-        // Si es la carpeta raíz, actualizar files directamente
-        setFiles(data);
+        setFiles(filesArray);
       } else {
-        // Si es una subcarpeta, actualizar loadedFolders
         setLoadedFolders(prev => ({
           ...prev,
-          [folderPath]: data
+          [folderPath]: filesArray
         }));
       }
     } catch (error) {
       console.error('Error fetching folder content:', error);
+      if (folderPath === '') {
+        setFiles([]);
+      }
     }
   };
 
-  const toggleFolder = async (path: string) => {
+  const handleToggleFolder = useCallback(async (path: string) => {
     const newExpanded = new Set(expandedFolders);
     
     if (newExpanded.has(path)) {
       newExpanded.delete(path);
     } else {
       newExpanded.add(path);
-      // Solo cargar el contenido si no se ha cargado antes
       if (!loadedFolders[path]) {
         await fetchFolderContent(path);
       }
     }
     
     setExpandedFolders(newExpanded);
-  };
+  }, [expandedFolders, loadedFolders, fetchFolderContent]);
 
-  // Set Text with File content
-  const openFile = async (path: string) => {
+  const handleOpenFile = useCallback(async (path: string) => {
     try {
       const response = await fetch(`/api/file/${encodeURIComponent(path)}`);
       if (!response.ok) {
@@ -76,11 +77,10 @@ export function FileExplorer({ setText, setCurrentFile }: FileExplorerProps) {
       setCurrentFile(path);
     } catch (error) {
       console.error('Error opening file:', error);
-      // Aquí podrías mostrar un mensaje de error al usuario
     }
-  };
+  }, [setText, setCurrentFile]);
 
-  const renderItem = (item: FileSystemItem, depth = 0) => {
+  const renderItem = useCallback((item: FileSystemItem, depth = 0) => {
     const isExpanded = expandedFolders.has(item.path);
     const paddingLeft = depth * 12;
     const children = loadedFolders[item.path] || [];
@@ -94,7 +94,7 @@ export function FileExplorer({ setText, setCurrentFile }: FileExplorerProps) {
               'w-full justify-start px-2 hover:bg-accent',
               isExpanded && 'bg-accent/50'
             )}
-            onClick={() => toggleFolder(item.path)}
+            onClick={() => handleToggleFolder(item.path)}
           >
             <div style={{ paddingLeft: `${paddingLeft}px` }} className="flex items-center gap-2">
               {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -106,12 +106,12 @@ export function FileExplorer({ setText, setCurrentFile }: FileExplorerProps) {
         </div>
       );
     } else {
-      // Is FILE
       return (
         <Button
+          key={item.path}
           variant="ghost"
           className="w-full justify-start px-2 hover:bg-accent"
-          onClick={() => openFile(item.path)}
+          onClick={() => handleOpenFile(item.path)}
         >
           <div style={{ paddingLeft: `${paddingLeft + 20}px` }} className="flex items-center gap-2">
             <File className="h-4 w-4" />
@@ -120,7 +120,7 @@ export function FileExplorer({ setText, setCurrentFile }: FileExplorerProps) {
         </Button>
       );
     }
-  };
+  }, [expandedFolders, loadedFolders, handleToggleFolder, handleOpenFile]);
 
   return (
     <div className="flex h-full flex-col">
@@ -137,7 +137,7 @@ export function FileExplorer({ setText, setCurrentFile }: FileExplorerProps) {
       </div>
       <ScrollArea className="flex-1">
         <div className="py-2">
-          {files.map((item) => renderItem(item))}
+          {Array.isArray(files) && files.map((item) => renderItem(item))}
         </div>
       </ScrollArea>
     </div>

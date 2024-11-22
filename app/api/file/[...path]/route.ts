@@ -6,16 +6,15 @@ export async function GET(
   { params }: { params: { path: string[] } }
 ) {
   try {
-    // Unir los segmentos de la ruta con '/'
-    const filePath = params.path.join('/');
-
-    if (!filePath) {
+    // Asegurarse de que params.path existe antes de usarlo
+    if (!params.path) {
       return NextResponse.json(
         { error: 'File path is required' },
         { status: 400 }
       );
     }
 
+    const filePath = params.path.join('/');
     const content = getFileContent(filePath);
     return NextResponse.json({ content });
   } catch (error: any) {

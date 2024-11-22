@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { MdEditor } from 'md-editor-rt';
 import { Button } from './ui/button';
 import { Save } from 'lucide-react';
 import 'md-editor-rt/lib/style.css';
@@ -14,8 +14,19 @@ interface EditorProps {
   currentFile?: string;
 }
 
+// Dynamically import MdEditor with ssr disabled
+const MdEditor = dynamic(
+  () => import('md-editor-rt').then(mod => mod.MdEditor),
+  { ssr: false }
+);
+
 export function Editor({ text, setText, currentFile }: EditorProps) {
   const [isSaving, setIsSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSave = async () => {
     if (!currentFile) return;
@@ -66,17 +77,21 @@ export function Editor({ text, setText, currentFile }: EditorProps) {
           </div>
         </div>
         <TabsContent value="edit" className="h-[calc(100%-3rem)] mt-0">
-          <MdEditor 
-            style={{ height: '100%' }} 
-            theme='dark' 
-            language='es-ES' 
-            autoFocus={true} 
-            showCodeRowNumber={true} 
-            autoDetectCode={true} 
-            scrollAuto={true} 
-            value={text} 
-            onChange={setText} 
-          />
+          {mounted ? (
+            <MdEditor 
+              style={{ height: '100%' }} 
+              theme='dark' 
+              language='es-ES' 
+              autoFocus={false} 
+              showCodeRowNumber={true} 
+              autoDetectCode={true} 
+              scrollAuto={true} 
+              value={text} 
+              onChange={setText} 
+            />
+          ) : (
+            <div className="w-full h-full bg-background border rounded-md" />
+          )}
         </TabsContent>
         <TabsContent value="preview" className="h-[calc(100%-3rem)] mt-0">
           {/* Preview content */}
