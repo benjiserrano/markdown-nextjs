@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export const BASE_DIR = path.join('tmp'); // Carpeta no pública
+export const BASE_DIR = path.join('/tmp'); // Carpeta no pública
 
 // Obtener estructura de carpetas y archivos
 export function getFolderStructure(dir: string = '') {
